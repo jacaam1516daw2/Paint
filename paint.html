@@ -1,0 +1,209 @@
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript">
+        window.addEventListener("load", inici, true);
+        var imatge = new Image();
+
+        function obtenirCoordenades(canvas, evt, ctx) {
+            var rect = canvas.getBoundingClientRect();
+            var x = evt.clientX - rect.left;
+            var y = evt.clientY - rect.top;
+            console.log("x: " + x + " y: " + y);
+            ctx.lineTo(x + 1, y + 1);
+            ctx.stroke();
+        }
+
+        function inici() {
+            if (canvas.getContext) {
+                var ctx = canvas.getContext('2d');
+                ctx.beginPath();
+                //canvas.addEventListener('mousedown', function (evt) {
+                canvas.addEventListener('mousemove', function (evt) {
+                    obtenirCoordenades(document.getElementById('canvas'), evt, ctx);
+                }, false);
+            }
+        }
+
+        function neteja() {
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            inici();
+        }
+
+        function circulos() {
+            var ctx = canvas.getContext('2d');
+
+            // begin custom shape
+            ctx.beginPath();
+            ctx.moveTo(170, 80);
+            ctx.bezierCurveTo(130, 100, 130, 150, 230, 150);
+            ctx.bezierCurveTo(250, 180, 320, 180, 340, 150);
+            ctx.bezierCurveTo(420, 150, 420, 120, 390, 100);
+            ctx.bezierCurveTo(430, 40, 370, 30, 340, 50);
+            ctx.bezierCurveTo(320, 5, 250, 20, 250, 50);
+            ctx.bezierCurveTo(200, 5, 150, 20, 170, 80);
+
+            // complete custom shape
+            ctx.closePath();
+            ctx.lineWidth = document.getElementById('gruix').value;
+            ctx.strokeStyle = document.getElementById('colorline').value;
+            ctx.stroke();
+        }
+        /*
+
+                function rectangles() {
+                    Rectangles: rect(x, y, width, height)
+                    Arcs,
+                    mesurats en radians no en graus.
+                    var radians = (Math.PI / 180) * graus.
+                    arc(x, y, radius, startAngle, endAngle, anticlockwise)
+                    strokeRect(x, y, width, height);
+
+                }
+        */
+
+        function dibujar_cuadro() {
+            var ctx = canvas.getContext('2d');
+            ctx.fillRect(150, 150, 300, 200);
+            inici();
+        }
+
+        function gruix() {
+            var ctx = canvas.getContext('2d');
+            ctx.lineWidth = document.getElementById('gruix').value;
+            inici();
+        }
+
+        function colorline() {
+            var ctx = canvas.getContext('2d');
+            ctx.strokeStyle = document.getElementById('colorline').value;
+            inici();
+        }
+
+        function getCursorPosition(canvas, event) {
+            var rect = canvas.getBoundingClientRect();
+            var x = event.clientX - rect.left;
+            var y = event.clientY - rect.top;
+            console.log("x: " + x + " y: " + y);
+        }
+
+        function cargarimagen() {
+            imatge.src = document.getElementById("imagen").files[0].name; //document.getElementById('imagen').value;
+            imatge.onload = function () {
+                dibuixar();
+            };
+            if (document.getElementById('opimg').value > '1') {
+                document.createElement("canvas2").getContext("2d");
+            }
+        }
+
+        function dibuixar() {
+            var canvas = document.getElementById('canvas');
+            if (canvas.getContext) {
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(imatge, 0, 0);
+                if (document.getElementById('opimg').value > '1') {
+                    ferNegatiu(imatge, ctx, canvas);
+                }
+            }
+        }
+
+        function ferNegatiu(imageObj, context, canvas) {
+            var destX = 0;
+            var destY = 100;
+            context.drawImage(imageObj, destX, destY);
+            var imageData = context.getImageData(0, 100, canvas.width,
+                canvas.height);
+            var pixels = imageData.data;
+
+            if (document.getElementById('opimg').value == '3') {
+                //Blanco y negro
+                for (var i = 0; i < pixels.length * 4; i += 4) {
+                    //calcula la luminosidad percibida para este pixel
+                    var luminosidad = parseInt((pixels[i] + pixels[i + 1] + pixels[i + 2]) / 3);
+                    pixels[i] = luminosidad; // rojo
+                    pixels[i + 1] = luminosidad; // verde
+                    pixels[i + 2] = luminosidad; // azul
+                }
+            } else {
+
+                //Negativo
+                for (var i = 0; i < pixels.length; i += 4) {
+                    pixels[i] = 255 - pixels[i];
+                    // red
+                    pixels[i + 1] = 255 - pixels[i + 1]; // green
+                    pixels[i + 2] = 255 - pixels[i + 2]; // blue
+                    // i+3 es alpha
+                }
+            }
+            // modifiquem original
+            context.putImageData(imageData, 0, 100);
+            muestra('oculta');
+        }
+
+        function muestra(op) {
+            if (op == 'opciones') {
+                document.getElementById('opciones').hidden = "";
+                document.getElementById('img').hidden = "";
+            } else if (op == 'carga') {
+                document.getElementById('carga').hidden = "";
+            } else {
+                document.getElementById('opciones').hidden = "hidden";
+                document.getElementById('img').hidden = "hidden";
+                document.getElementById('carga').hidden = "hidden";
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <table border="1">
+        <tr>
+            <td>
+                <canvas id="canvas" width="500px" height="300px"></canvas>
+            </td>
+            <td>
+                <input type="button" onclick="dibujar_cuadro()" value="Cuadrado">
+                <br>
+                <select name="Gruix" id="gruix" onchange="gruix()">
+                    <option value="1">Gruix 1</option>
+                    <option value="2">Gruix 2</option>
+                    <option value="3">Gruix 3</option>
+                    <option value="4">Gruix 4</option>
+                    <option value="5">Gruix 5</option>
+                    <option value="6">Gruix 6</option>
+                </select>
+                <br>
+                <select name="Color" id="colorline" onchange="colorline()">
+                    <option value="#000000">Black</option>
+                    <option value="#ff0000">Red</option>
+                    <option value="#00cc00">Green</option>
+                    <option value="#0066ff">Blue</option>
+                </select>
+                <br>
+                <input type="button" id="clear" value="Neteja" onclick="neteja()" />
+                <br>
+                <input type="button" id="circulos" onclick="circulos()" value='circulos' />
+                <br>
+            </td>
+        </tr>
+    </table>
+    <div id="gestionImagen">
+        <input type="button" id="boton" onclick="muestra('opciones')" value="Imagen" />
+        <div id="opciones" hidden="hidden">
+            Selecciona una opción
+            <select name="opimg" id="opimg">
+                <option value="1">Cargar Imagen</option>
+                <option value="2">Negativo</option>
+                <option value="3">Blanco-Negro</option>
+            </select>
+        </div>
+        <div id="img" hidden="hidden">
+            Ingresa el archivo:
+            <input id="imagen" type="file" mutliple="true" onchange="muestra('carga')" />
+            <input type="button" id="carga" onclick="cargarimagen()" hidden="hidden" value="Carga Imagen" />
+        </div>
+    </div>
+</body>
+
+</html>
