@@ -4,6 +4,11 @@
         window.addEventListener("load", inici, true);
         var imatge = new Image();
 
+        function downloadCanvas(link, canvasId, filename) {
+            link.href = document.getElementById(canvasId).toDataURL();
+            link.download = filename;
+        }
+
         function obtenirCoordenades(canvas, evt, ctx) {
             var rect = canvas.getBoundingClientRect();
             var x = evt.clientX - rect.left;
@@ -49,22 +54,11 @@
             ctx.strokeStyle = document.getElementById('colorline').value;
             ctx.stroke();
         }
-        /*
-
-                function rectangles() {
-                    Rectangles: rect(x, y, width, height)
-                    Arcs,
-                    mesurats en radians no en graus.
-                    var radians = (Math.PI / 180) * graus.
-                    arc(x, y, radius, startAngle, endAngle, anticlockwise)
-                    strokeRect(x, y, width, height);
-
-                }
-        */
 
         function dibujar_cuadro() {
             var ctx = canvas.getContext('2d');
-            ctx.fillRect(150, 150, 300, 200);
+            ctx.fillRect(0, 0, 300, 200);
+            ctx.strokeStyle = document.getElementById('colorline').value;
             inici();
         }
 
@@ -147,10 +141,28 @@
                 document.getElementById('img').hidden = "";
             } else if (op == 'carga') {
                 document.getElementById('carga').hidden = "";
+            } else if (op == 'texto') {
+                document.getElementById('escribir').hidden = "";
             } else {
                 document.getElementById('opciones').hidden = "hidden";
                 document.getElementById('img').hidden = "hidden";
                 document.getElementById('carga').hidden = "hidden";
+                document.getElementById('file').value = "";
+            }
+        }
+
+        function escribeTexto() {
+            if (document.getElementById('tamanyo').value != "" || document.getElementById('texto').value != "") {
+                var ctx = canvas.getContext('2d');
+                // Definimos una fuente y un tamaño de letra.
+                ctx.font = document.getElementById('tamanyo').value + 'px ' + document.getElementById('fuente').value;
+                // Y solo queda utilizar fillText para definir el texto a mostrar y la posición de origen.
+                ctx.fillText(document.getElementById('texto').value, 20, 140);
+                document.getElementById('escribir').hidden = "hidden";
+                document.getElementById('tamanyo').value = "";
+                document.getElementById('texto').value = "";
+            } else {
+                alert('Has de informar el tamaño y el texto ha escribir');
             }
         }
     </script>
@@ -159,12 +171,45 @@
 <body>
     <table border="1">
         <tr>
-            <td>
+            <td onclick="dibujar_cuadro()">
+                <img src="images/cuadrado.jpg" width="50px" height="50px">
+            </td>
+            <td rowspan="7">
                 <canvas id="canvas" width="500px" height="300px"></canvas>
             </td>
+        </tr>
+        <tr>
+            <td onclick="circulos()">
+                <img src="images/cercle.png" width="50px" height="50px">
+            </td>
+        </tr>
+        <tr>
+            <td onclick="muestra('texto')">
+                <img src="images/txt.jpg" width="50px" height="50px">
+            </td>
+        </tr>
+        <tr>
+            <td onclick="neteja()">
+                <img src="images/neteja.jpg" width="50px" height="50px">
+            </td>
+        </tr>
+        <tr>
             <td>
-                <input type="button" onclick="dibujar_cuadro()" value="Cuadrado">
-                <br>
+                <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" width="50px" height="50px"></a>
+            </td>
+        </tr>
+        <tr>
+            <td onclick="muestra('opciones')">
+                <img src="images/foto.jpg" width="50px" height="50px">
+            </td>
+
+        </tr>
+
+    </table>
+    <table border="1">
+        <tr>
+            <td>
+                Tamaño:
                 <select name="Gruix" id="gruix" onchange="gruix()">
                     <option value="1">Gruix 1</option>
                     <option value="2">Gruix 2</option>
@@ -173,36 +218,60 @@
                     <option value="5">Gruix 5</option>
                     <option value="6">Gruix 6</option>
                 </select>
-                <br>
+            </td>
+            <td>
+                Color:
                 <select name="Color" id="colorline" onchange="colorline()">
                     <option value="#000000">Black</option>
                     <option value="#ff0000">Red</option>
                     <option value="#00cc00">Green</option>
                     <option value="#0066ff">Blue</option>
                 </select>
-                <br>
-                <input type="button" id="clear" value="Neteja" onclick="neteja()" />
-                <br>
-                <input type="button" id="circulos" onclick="circulos()" value='circulos' />
-                <br>
             </td>
         </tr>
     </table>
-    <div id="gestionImagen">
-        <input type="button" id="boton" onclick="muestra('opciones')" value="Imagen" />
-        <div id="opciones" hidden="hidden">
-            Selecciona una opción
-            <select name="opimg" id="opimg">
-                <option value="1">Cargar Imagen</option>
-                <option value="2">Negativo</option>
-                <option value="3">Blanco-Negro</option>
-            </select>
-        </div>
-        <div id="img" hidden="hidden">
-            Ingresa el archivo:
-            <input id="imagen" type="file" mutliple="true" onchange="muestra('carga')" />
-            <input type="button" id="carga" onclick="cargarimagen()" hidden="hidden" value="Carga Imagen" />
-        </div>
+    <div id="opciones" hidden="hidden">
+        <table>
+            <tr>
+                <td>
+                    Selecciona una opción
+                    <select name="opimg" id="opimg">
+                        <option value="1">Cargar Imagen</option>
+                        <option value="2">Negativo</option>
+                        <option value="3">Blanco-Negro</option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="img" hidden="hidden">
+        <table>
+            <tr>
+                <td>
+                    Ingresa el archivo:
+                    <input id="imagen" type="file" mutliple="true" onchange="muestra('carga')" />
+                    <input type="button" id="carga" onclick="cargarimagen()" hidden="hidden" value="Carga Imagen" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="escribir" hidden="hidden">
+        <table>
+            <tr>
+                <td>
+                    Tamaño fuente:
+                    <input id="tamanyo" type="text" size="2" maxlength="2" /> Texto:
+                    <input id="texto" type="text" /> Selecciona un tipo de fuente
+                    <select name="fuente" id="fuente">
+                        <option value="sans-times">Times</option>
+                        <option value="ubuntu">Ubuntu</option>
+                        <option value="serif">Serif</option>
+                        <option value="Courier">Courier</option>
+                    </select>
+                    <input type="button" id="escribe" onclick="escribeTexto()" value="Escribe el Texto" />
+                </td>
+            </tr>
+        </table>
     </div>
 </body>
 
