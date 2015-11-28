@@ -4,88 +4,125 @@
 <head>
     <meta charset="utf-8" />
     <script type="text/javascript">
-        function figures(figure) {
-            var canvas; // el canvas
-            var ctx; // el contexto
-            var canvasLimites; // los margenes del canvas
-            var paint = false; // nos dice si pintar o no
-            var mbegin; // info de mi figura (x,y)
-            var mend; // info de mi figura (width,height)
+        var canvas; // el canvas
+        var ctx; // el contexto
+        var canvasLimites; // los margenes del canvas
+        var flagPaint = false; // nos dice si pintar o no
+        var mbegin; // la posición actual donde hice click
+        var action; //accion a realizar
 
-            function prepareCanvas() {
-                canvas = document.getElementById("canvas");
-                ctx = canvas.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
-                canvasLimites = canvas.getBoundingClientRect(); // obtenemos los limites del canvas
-                canvas.addEventListener('mousedown', down, false);
-                canvas.addEventListener('mouseup', up, false);
-                canvas.addEventListener('mousemove', pintarFigura, false);
+        function prepareCanvas(act) {
+            action = act;
+            canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
+            canvasLimites = canvas.getBoundingClientRect(); // obtenemos los limites del canvas
+            canvas.addEventListener('mousedown', down, false);
+            canvas.addEventListener('mouseup', up, false);
+            canvas.addEventListener('mousemove', actionEvnt, false);
+            canvas.style.cursor = "hand";
+
+            borrador = document.getElementById("borrador");
+            borrador.addEventListener('click', erase, false);
+        }
+
+        function down(e) {
+            mbegin = obtenerCoordenadas(e);
+            flagPaint = true;
+        }
+
+        function up() {
+            flagPaint = false;
+        }
+
+        function actionEvnt(e) {
+            if (action == 'linia') {
+                pintarLinea(e);
+            } else if (action == 'circulo') {
+                pintarFigura(e);
+            } else if (action == 'rectangulo') {
+                pintarFigura(e);
+            } else {
+
             }
+        }
 
-            function down(e) {
-                mbegin = obtenerCoordenadas(e);
-                paint = true;
-            }
-
-            function up() {
-                paint = false;
-            }
-
-            function pintarFigura(e) {
-                if (paint) {
-                    mend = obtenerLimites(e);
-                    dibujarFigura();
-                }
-            }
-
-            function obtenerCoordenadas(event) {
-                var posX;
-                var posY;
-
-                if (event.pageX || event.pageY) {
-                    posX = event.pageX - canvasLimites.left;
-                    posY = event.pageY - canvasLimites.top;
-                } else {
-                    posX = event.clientX - canvasLimites.left;
-                    posY = event.clientY - canvasLimites.top;
-                }
-
-                return {
-                    x: posX,
-                    y: posY
+        function pintarLinea(event) {
+            if (flagPaint) {
+                var coordenadas = obtenerCoordenadas(event);
+                ctx.beginPath(); // comenzamos a dibujar
+                ctx.moveTo(mbegin.x, mbegin.y); // ubicamos el cursor en la posicion (10,10)
+                ctx.lineTo(coordenadas.x, coordenadas.y);
+                mbegin = {
+                    x: coordenadas.x,
+                    y: coordenadas.y
                 };
+                ctx.strokeStyle = "#000"; // color de la linea
+                ctx.stroke(); // dibujamos la linea
+            }
+        }
+
+        function erase() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+
+
+
+        function pintarFigura(e) {
+            if (flagPaint) {
+                mend = obtenerLimites(e);
+                dibujarFigura();
+            }
+        }
+
+        function obtenerCoordenadas(event) {
+            var posX;
+            var posY;
+
+            if (event.pageX || event.pageY) {
+                posX = event.pageX - canvasLimites.left;
+                posY = event.pageY - canvasLimites.top;
+            } else {
+                posX = event.clientX - canvasLimites.left;
+                posY = event.clientY - canvasLimites.top;
             }
 
-            function obtenerLimites(event) {
-                var width;
-                var height;
+            return {
+                x: posX,
+                y: posY
+            };
+        }
 
-                if (event.pageX || event.pageY) {
-                    width = (event.pageX - canvasLimites.left) - mbegin.x;
-                    height = (event.pageY - canvasLimites.top) - mbegin.y;
-                } else {
-                    width = (event.clientX - canvasLimites.left) - mbegin.x;
-                    height = (event.clientY - canvasLimites.top) - mbegin.y;
-                }
+        function obtenerLimites(event) {
 
-                return {
-                    w: width,
-                    h: height
-                };
+            var width;
+            var height;
+
+            if (event.pageX || event.pageY) {
+                width = (event.pageX - canvasLimites.left) - mbegin.x;
+                height = (event.pageY - canvasLimites.top) - mbegin.y;
+            } else {
+                width = (event.clientX - canvasLimites.left) - mbegin.x;
+                height = (event.clientY - canvasLimites.top) - mbegin.y;
             }
 
-            function dibujarFigura() {
-                ctx.fillStyle = "rgba(22,87,122,0.7)";
-                if (figure == 'cercle') {
-                    ctx.arc(mbegin.x, mbegin.y, mend.w, 0, 2 * Math.PI, true);
-                    ctx.closePath();
-                    ctx.fill();
-                } else {
-                    ctx.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
-                    ctx.closePath();
-                }
+            return {
+                w: width,
+                h: height
+            };
+        }
 
+        function dibujarFigura() {
+            ctx.fillStyle = "rgba(22,87,122,0.7)";
+            if (action == 'circulo') {
+                ctx.arc(mbegin.x, mbegin.y, mend.w, 0, 2 * Math.PI, true);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                ctx.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
+                ctx.closePath();
             }
-            prepareCanvas();
+
         }
     </script>
 </head>
@@ -94,8 +131,10 @@
     <table border="1">
         <tr>
             <td>
-                <input type="button" onclick="figures('cercle')" value="cercles">
-                <input type="button" onclick="figures('rect')" value="rectangulos">
+                <input type="button" id="borrador" value="Borrar Todo" />
+                <input type="button" onclick="prepareCanvas('linia')" value="pintar">
+                <input type="button" onclick="prepareCanvas('circulo')" value="cercles">
+                <input type="button" onclick="prepareCanvas('rectangulo')" value="rectangulos">
             </td>
             <td rowspan="2">
                 <canvas id="canvas" width="500px" height="300px"></canvas>
