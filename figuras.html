@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript">
+        function figures(figure) {
+            var canvas; // el canvas
+            var ctx; // el contexto
+            var canvasLimites; // los margenes del canvas
+            var paint = false; // nos dice si pintar o no
+            var mbegin; // info de mi figura (x,y)
+            var mend; // info de mi figura (width,height)
+
+            function prepareCanvas() {
+                canvas = document.getElementById("canvas");
+                ctx = canvas.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
+                canvasLimites = canvas.getBoundingClientRect(); // obtenemos los limites del canvas
+                canvas.addEventListener('mousedown', down, false);
+                canvas.addEventListener('mouseup', up, false);
+                canvas.addEventListener('mousemove', pintarFigura, false);
+            }
+
+            function down(e) {
+                mbegin = obtenerCoordenadas(e);
+                paint = true;
+            }
+
+            function up() {
+                paint = false;
+            }
+
+            function pintarFigura(e) {
+                if (paint) {
+                    mend = obtenerLimites(e);
+                    dibujarFigura();
+                }
+            }
+
+            function obtenerCoordenadas(event) {
+                var posX;
+                var posY;
+
+                if (event.pageX || event.pageY) {
+                    posX = event.pageX - canvasLimites.left;
+                    posY = event.pageY - canvasLimites.top;
+                } else {
+                    posX = event.clientX - canvasLimites.left;
+                    posY = event.clientY - canvasLimites.top;
+                }
+
+                return {
+                    x: posX,
+                    y: posY
+                };
+            }
+
+            function obtenerLimites(event) {
+                var width;
+                var height;
+
+                if (event.pageX || event.pageY) {
+                    width = (event.pageX - canvasLimites.left) - mbegin.x;
+                    height = (event.pageY - canvasLimites.top) - mbegin.y;
+                } else {
+                    width = (event.clientX - canvasLimites.left) - mbegin.x;
+                    height = (event.clientY - canvasLimites.top) - mbegin.y;
+                }
+
+                return {
+                    w: width,
+                    h: height
+                };
+            }
+
+            function dibujarFigura() {
+                ctx.fillStyle = "rgba(22,87,122,0.7)";
+                if (figure == 'cercle') {
+                    ctx.arc(mbegin.x, mbegin.y, mend.w, 0, 2 * Math.PI, true);
+                    ctx.closePath();
+                    ctx.fill();
+                } else {
+                    ctx.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
+                    ctx.closePath();
+                }
+
+            }
+            prepareCanvas();
+        }
+    </script>
+</head>
+
+<body>
+    <table border="1">
+        <tr>
+            <td>
+                <input type="button" onclick="figures('cercle')" value="cercles">
+                <input type="button" onclick="figures('rect')" value="rectangulos">
+            </td>
+            <td rowspan="2">
+                <canvas id="canvas" width="500px" height="300px"></canvas>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>
