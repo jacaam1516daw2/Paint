@@ -4,76 +4,73 @@
 <head>
     <meta charset="utf-8" />
     <script type="text/javascript">
-        window.addEventListener("load", inici, true);
+        var canvas; // el canvas
+        var ctx; // el contexto
+        var canvasLimites; // los margenes del canvas
+        var flagPaint = false; // nos dice si pintar o no
+        var mbegin; // la posición actual donde hice click
+        var action; //accion a realizar
         var imatge = new Image();
+
+        // Este metodo captura toda accion de paint
+        function prepareCanvas(act) {
+            //guardamos la accion a realizar pasada por parametro: ejem: circulo, cuadrado pintar
+            action = act;
+            canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
+            canvasLimites = canvas.getBoundingClientRect(); // obtenemos los limites del canvas
+            canvas.addEventListener('mousedown', down, false);
+            canvas.addEventListener('mouseup', up, false);
+            //cuando movemos el raton llamamos al actionevent
+            canvas.addEventListener('mousemove', actionEvnt, false);
+            canvas.style.cursor = "hand";
+
+            borrador = document.getElementById("borrador");
+            borrador.addEventListener('click', erase, false);
+        }
+
+        function down(e) {
+            mbegin = obtenerCoordenadas(e);
+            flagPaint = true;
+        }
+
+        function up() {
+            flagPaint = false;
+        }
+
+        // este metodo se encarga de realizar la llamada al método que se ha de realizar el dispacher
+        //se ha intentado aplicar un switch pero no funcionamba correctamente
+        function actionEvnt(e) {
+            if (action == 'linia') {
+                pintarLinea(e);
+            } else if (action == 'circulo') {
+                pintarFigura(e);
+            } else if (action == 'rectangulo') {
+                pintarFigura(e);
+            } else {
+
+            }
+        }
 
         function downloadCanvas(link, canvasId, filename) {
             link.href = document.getElementById(canvasId).toDataURL();
             link.download = filename;
         }
 
-        function obtenirCoordenades(canvas, evt, ctx) {
-            var rect = canvas.getBoundingClientRect();
-            var x = evt.clientX - rect.left;
-            var y = evt.clientY - rect.top;
-            console.log("x: " + x + " y: " + y);
-            ctx.lineTo(x + 1, y + 1);
-            ctx.stroke();
-        }
-
-        function inici() {
-            if (canvas.getContext) {
-                var ctx = canvas.getContext('2d');
-                ctx.beginPath();
-                canvas.addEventListener('mousemove', function (evt) {
-                    obtenirCoordenades(document.getElementById('canvas'), evt, ctx);
-                }, false);
-            }
-        }
-
         function neteja() {
             var ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            inici();
-        }
-
-        function circulos(lleno) {
-            var ctx = canvas.getContext('2d');
-            ctx.lineWidth = document.getElementById('gruix').value;
-            ctx.fillStyle = document.getElementById('colorline').value;
-            ctx.beginPath();
-            ctx.arc(60, 60, 50, 0, Math.PI * 2, true);
-            ctx.closePath();
-            ctx.stroke();
-            if (lleno == 1) {
-                ctx.fill();
-            }
-            inici();
-        }
-
-        function cuadrado(lleno) {
-            var ctx = canvas.getContext('2d');
-            ctx.beginPath();
-            ctx.rect(150, 150, 50, 50);
-            if (lleno == 1) {
-                ctx.fill();
-            }
-            ctx.lineWidth = document.getElementById('gruix').value;
-            ctx.fillStyle = document.getElementById('colorline').value;
-            ctx.stroke();
-            inici();
         }
 
         function gruix() {
             var ctx = canvas.getContext('2d');
             ctx.lineWidth = document.getElementById('gruix').value;
-            inici();
         }
 
         function colorline() {
             var ctx = canvas.getContext('2d');
             ctx.strokeStyle = document.getElementById('colorline').value;
-            inici();
+
         }
 
         function cargarimagen() {
@@ -161,83 +158,80 @@
             }
         }
 
-        /* ///////////////////////////////////////////////////////////////////// */
-        function cuad() {
-            var miLienzo; // el canvas
-            var contexto; // el contexto
-            var canvasLimites; // los margenes del canvas
-            var paint = false; // nos dice si pintar o no
-            var mbegin; // info de mi cuadro (x,y)
-            var mend; // info de mi cuadro (width,height)
 
-            function prepareCanvas() {
-                miLienzo = document.getElementById("canvas");
-                contexto = miLienzo.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
-                canvasLimites = miLienzo.getBoundingClientRect(); // obtenemos los limites del canvas
-                miLienzo.addEventListener('mousedown', down, false);
-                miLienzo.addEventListener('mouseup', up, false);
-                miLienzo.addEventListener('mousemove', pintarCuadro, false);
-                miLienzo.style.cursor = "pointer";
-            }
 
-            function down(e) {
-                mbegin = obtenerCoordenadas(e);
-                paint = true;
-            }
 
-            function up() {
-                paint = false;
-            }
-
-            function pintarCuadro(e) {
-                if (paint) {
-                    mend = obtenerBounds(e);
-                    dibujarCuadro();
-                }
-            }
-
-            function obtenerCoordenadas(event) {
-                var posX;
-                var posY;
-
-                if (event.pageX || event.pageY) {
-                    posX = event.pageX - canvasLimites.left;
-                    posY = event.pageY - canvasLimites.top;
-                } else {
-                    posX = event.clientX - canvasLimites.left;
-                    posY = event.clientY - canvasLimites.top;
-                }
-
-                return {
-                    x: posX,
-                    y: posY
+        function pintarLinea(event) {
+            if (flagPaint) {
+                var coordenadas = obtenerCoordenadas(event);
+                ctx.beginPath(); // comenzamos a dibujar
+                ctx.moveTo(mbegin.x, mbegin.y); // ubicamos el cursor en la posicion (10,10)
+                ctx.lineTo(coordenadas.x, coordenadas.y);
+                mbegin = {
+                    x: coordenadas.x,
+                    y: coordenadas.y
                 };
+                ctx.strokeStyle = "#000"; // color de la linea
+                ctx.stroke(); // dibujamos la linea
+            }
+        }
+
+
+        function pintarFigura(e) {
+            if (flagPaint) {
+                mend = obtenerLimites(e);
+                dibujarFigura();
+            }
+        }
+
+        function obtenerCoordenadas(event) {
+            var posX;
+            var posY;
+
+            if (event.pageX || event.pageY) {
+                posX = event.pageX - canvasLimites.left;
+                posY = event.pageY - canvasLimites.top;
+            } else {
+                posX = event.clientX - canvasLimites.left;
+                posY = event.clientY - canvasLimites.top;
             }
 
-            function obtenerBounds(event) {
-                var width;
-                var height;
+            return {
+                x: posX,
+                y: posY
+            };
+        }
 
-                if (event.pageX || event.pageY) {
-                    width = (event.pageX - canvasLimites.left) - mbegin.x;
-                    height = (event.pageY - canvasLimites.top) - mbegin.y;
-                } else {
-                    width = (event.clientX - canvasLimites.left) - mbegin.x;
-                    height = (event.clientY - canvasLimites.top) - mbegin.y;
-                }
+        function obtenerLimites(event) {
 
-                return {
-                    w: width,
-                    h: height
-                };
+            var width;
+            var height;
+
+            if (event.pageX || event.pageY) {
+                width = (event.pageX - canvasLimites.left) - mbegin.x;
+                height = (event.pageY - canvasLimites.top) - mbegin.y;
+            } else {
+                width = (event.clientX - canvasLimites.left) - mbegin.x;
+                height = (event.clientY - canvasLimites.top) - mbegin.y;
             }
 
-            function dibujarCuadro() {
-                contexto.fillStyle = colorline;
-                contexto.fill = colorline;
-                contexto.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
+            return {
+                w: width,
+                h: height
+            };
+        }
+
+        function dibujarFigura() {
+            ctx.fillStyle = "rgba(22,87,122,0.7)";
+            if (action == 'circulo') {
+                ctx.arc(mbegin.x, mbegin.y, mend.w, 0, 2 * Math.PI, true);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                ctx.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
+                ctx.closePath();
             }
-            prepareCanvas();
+
         }
     </script>
 </head>
@@ -245,18 +239,18 @@
 <body>
     <table border="1">
         <tr>
-            <td onclick="cuad()">
+            <td onclick="prepareCanvas('rectangulo')">
                 <img src="images/cuadrado.jpg" width="50px" height="50px">
             </td>
-            <td onclick="cuadrado(1)">
-                <img src="images/cuadrado1.jpg" width="50px" height="50px">
+            <td onclick="prepareCanvas('linia')">
+                <img src="images/lapiz.png" width="50px" height="50px">
             </td>
             <td rowspan="7">
                 <canvas id="canvas" width="500px" height="300px"></canvas>
             </td>
         </tr>
         <tr>
-            <td onclick="circulos(0)">
+            <td onclick="prepareCanvas('circulo')">
                 <img src="images/cercle.png" width="50px" height="50px">
             </td>
             <td onclick="circulos(1)">
