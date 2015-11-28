@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <script type="text/javascript">
+        function cuad() {
+            var miLienzo; // el canvas
+            var contexto; // el contexto
+            var canvasLimites; // los margenes del canvas
+            var paint = false; // nos dice si pintar o no
+            var mbegin; // info de mi cuadro (x,y)
+            var mend; // info de mi cuadro (width,height)
+
+            function prepareCanvas() {
+                miLienzo = document.getElementById("canvas");
+                contexto = miLienzo.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
+                canvasLimites = miLienzo.getBoundingClientRect(); // obtenemos los limites del canvas
+                miLienzo.addEventListener('mousedown', down, false);
+                miLienzo.addEventListener('mouseup', up, false);
+                miLienzo.addEventListener('mousemove', pintarCuadro, false);
+                miLienzo.style.cursor = "pointer";
+            }
+
+            function down(e) {
+                mbegin = obtenerCoordenadas(e);
+                paint = true;
+            }
+
+            function up() {
+                paint = false;
+            }
+
+            function pintarCuadro(e) {
+                if (paint) {
+                    mend = obtenerBounds(e);
+                    dibujarCuadro();
+                }
+            }
+
+            function obtenerCoordenadas(event) {
+                var posX;
+                var posY;
+
+                if (event.pageX || event.pageY) {
+                    posX = event.pageX - canvasLimites.left;
+                    posY = event.pageY - canvasLimites.top;
+                } else {
+                    posX = event.clientX - canvasLimites.left;
+                    posY = event.clientY - canvasLimites.top;
+                }
+
+                return {
+                    x: posX,
+                    y: posY
+                };
+            }
+
+            function dibujarCuadro() {
+                contexto.lineTo(mbegin.x, mbegin.y);
+                contexto.stroke();
+            }
+            prepareCanvas();
+
+        }
+    </script>
+</head>
+
+<body>
+    <table border="1">
+        <tr>
+
+            <td>
+                <input type="button" onclick="cuad()" value="cuad">
+            </td>
+            <td rowspan="2">
+                <canvas id="canvas" width="500px" height="300px"></canvas>
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

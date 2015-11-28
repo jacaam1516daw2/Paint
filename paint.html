@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" dir="ltr">
+
 <head>
     <meta charset="utf-8" />
     <script type="text/javascript">
@@ -22,7 +25,6 @@
             if (canvas.getContext) {
                 var ctx = canvas.getContext('2d');
                 ctx.beginPath();
-                //canvas.addEventListener('mousedown', function (evt) {
                 canvas.addEventListener('mousemove', function (evt) {
                     obtenirCoordenades(document.getElementById('canvas'), evt, ctx);
                 }, false);
@@ -35,30 +37,30 @@
             inici();
         }
 
-        function circulos() {
+        function circulos(lleno) {
             var ctx = canvas.getContext('2d');
-
-            // begin custom shape
-            ctx.beginPath();
-            ctx.moveTo(170, 80);
-            ctx.bezierCurveTo(130, 100, 130, 150, 230, 150);
-            ctx.bezierCurveTo(250, 180, 320, 180, 340, 150);
-            ctx.bezierCurveTo(420, 150, 420, 120, 390, 100);
-            ctx.bezierCurveTo(430, 40, 370, 30, 340, 50);
-            ctx.bezierCurveTo(320, 5, 250, 20, 250, 50);
-            ctx.bezierCurveTo(200, 5, 150, 20, 170, 80);
-
-            // complete custom shape
-            ctx.closePath();
             ctx.lineWidth = document.getElementById('gruix').value;
-            ctx.strokeStyle = document.getElementById('colorline').value;
+            ctx.fillStyle = document.getElementById('colorline').value;
+            ctx.beginPath();
+            ctx.arc(60, 60, 50, 0, Math.PI * 2, true);
+            ctx.closePath();
             ctx.stroke();
+            if (lleno == 1) {
+                ctx.fill();
+            }
+            inici();
         }
 
-        function dibujar_cuadro() {
+        function cuadrado(lleno) {
             var ctx = canvas.getContext('2d');
-            ctx.fillRect(0, 0, 300, 200);
-            ctx.strokeStyle = document.getElementById('colorline').value;
+            ctx.beginPath();
+            ctx.rect(150, 150, 50, 50);
+            if (lleno == 1) {
+                ctx.fill();
+            }
+            ctx.lineWidth = document.getElementById('gruix').value;
+            ctx.fillStyle = document.getElementById('colorline').value;
+            ctx.stroke();
             inici();
         }
 
@@ -72,13 +74,6 @@
             var ctx = canvas.getContext('2d');
             ctx.strokeStyle = document.getElementById('colorline').value;
             inici();
-        }
-
-        function getCursorPosition(canvas, event) {
-            var rect = canvas.getBoundingClientRect();
-            var x = event.clientX - rect.left;
-            var y = event.clientY - rect.top;
-            console.log("x: " + x + " y: " + y);
         }
 
         function cargarimagen() {
@@ -165,30 +160,113 @@
                 alert('Has de informar el tamaño y el texto ha escribir');
             }
         }
+
+        /* ///////////////////////////////////////////////////////////////////// */
+        function cuad() {
+            var miLienzo; // el canvas
+            var contexto; // el contexto
+            var canvasLimites; // los margenes del canvas
+            var paint = false; // nos dice si pintar o no
+            var mbegin; // info de mi cuadro (x,y)
+            var mend; // info de mi cuadro (width,height)
+
+            function prepareCanvas() {
+                miLienzo = document.getElementById("canvas");
+                contexto = miLienzo.getContext("2d"); // obtenemos el contexto ( dibujar en 2d)
+                canvasLimites = miLienzo.getBoundingClientRect(); // obtenemos los limites del canvas
+                miLienzo.addEventListener('mousedown', down, false);
+                miLienzo.addEventListener('mouseup', up, false);
+                miLienzo.addEventListener('mousemove', pintarCuadro, false);
+                miLienzo.style.cursor = "pointer";
+            }
+
+            function down(e) {
+                mbegin = obtenerCoordenadas(e);
+                paint = true;
+            }
+
+            function up() {
+                paint = false;
+            }
+
+            function pintarCuadro(e) {
+                if (paint) {
+                    mend = obtenerBounds(e);
+                    dibujarCuadro();
+                }
+            }
+
+            function obtenerCoordenadas(event) {
+                var posX;
+                var posY;
+
+                if (event.pageX || event.pageY) {
+                    posX = event.pageX - canvasLimites.left;
+                    posY = event.pageY - canvasLimites.top;
+                } else {
+                    posX = event.clientX - canvasLimites.left;
+                    posY = event.clientY - canvasLimites.top;
+                }
+
+                return {
+                    x: posX,
+                    y: posY
+                };
+            }
+
+            function obtenerBounds(event) {
+                var width;
+                var height;
+
+                if (event.pageX || event.pageY) {
+                    width = (event.pageX - canvasLimites.left) - mbegin.x;
+                    height = (event.pageY - canvasLimites.top) - mbegin.y;
+                } else {
+                    width = (event.clientX - canvasLimites.left) - mbegin.x;
+                    height = (event.clientY - canvasLimites.top) - mbegin.y;
+                }
+
+                return {
+                    w: width,
+                    h: height
+                };
+            }
+
+            function dibujarCuadro() {
+                contexto.fillStyle = colorline;
+                contexto.fill = colorline;
+                contexto.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
+            }
+            prepareCanvas();
+        }
     </script>
 </head>
 
 <body>
     <table border="1">
         <tr>
-            <td onclick="dibujar_cuadro()">
+            <td onclick="cuad()">
                 <img src="images/cuadrado.jpg" width="50px" height="50px">
+            </td>
+            <td onclick="cuadrado(1)">
+                <img src="images/cuadrado1.jpg" width="50px" height="50px">
             </td>
             <td rowspan="7">
                 <canvas id="canvas" width="500px" height="300px"></canvas>
             </td>
         </tr>
         <tr>
-            <td onclick="circulos()">
+            <td onclick="circulos(0)">
                 <img src="images/cercle.png" width="50px" height="50px">
+            </td>
+            <td onclick="circulos(1)">
+                <img src="images/circulo1.jpg" width="50px" height="50px">
             </td>
         </tr>
         <tr>
             <td onclick="muestra('texto')">
                 <img src="images/txt.jpg" width="50px" height="50px">
             </td>
-        </tr>
-        <tr>
             <td onclick="neteja()">
                 <img src="images/neteja.jpg" width="50px" height="50px">
             </td>
@@ -197,14 +275,15 @@
             <td>
                 <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" width="50px" height="50px"></a>
             </td>
-        </tr>
-        <tr>
             <td onclick="muestra('opciones')">
                 <img src="images/foto.jpg" width="50px" height="50px">
             </td>
-
         </tr>
-
+        <tr>
+            <td>
+                <input type="color" id="colorline" onchange="colorline()">
+            </td>
+        </tr>
     </table>
     <table border="1">
         <tr>
@@ -217,15 +296,6 @@
                     <option value="4">Gruix 4</option>
                     <option value="5">Gruix 5</option>
                     <option value="6">Gruix 6</option>
-                </select>
-            </td>
-            <td>
-                Color:
-                <select name="Color" id="colorline" onchange="colorline()">
-                    <option value="#000000">Black</option>
-                    <option value="#ff0000">Red</option>
-                    <option value="#00cc00">Green</option>
-                    <option value="#0066ff">Blue</option>
                 </select>
             </td>
         </tr>
