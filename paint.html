@@ -24,16 +24,17 @@
             //cuando movemos el raton llamamos al actionevent
             canvas.addEventListener('mousemove', actionEvnt, false);
             canvas.style.cursor = "hand";
-
             borrador = document.getElementById("borrador");
             borrador.addEventListener('click', erase, false);
         }
 
+        // Este metodo es para cambiar el estado del semafro a la hora de hacer click en el raton
         function down(e) {
             mbegin = obtenerCoordenadas(e);
             flagPaint = true;
         }
 
+        // Este metodo es para cambiar el estado del semafro a la hora de hacer dejar de hacer click en el raton
         function up() {
             flagPaint = false;
         }
@@ -41,7 +42,7 @@
         // este metodo se encarga de realizar la llamada al método que se ha de realizar el dispacher
         //se ha intentado aplicar un switch pero no funcionamba correctamente
         function actionEvnt(e) {
-            if (action == 'linia') {
+            if (action == 'linea') {
                 pintarLinea(e);
             } else if (action == 'circulo') {
                 pintarFigura(e);
@@ -52,11 +53,13 @@
             }
         }
 
+        //metodo que descarga la imagen del paint
         function downloadCanvas(link, canvasId, filename) {
             link.href = document.getElementById(canvasId).toDataURL();
             link.download = filename;
         }
 
+        //borrado de la pantalla del canvas
         function neteja() {
             var ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -70,7 +73,6 @@
         function colorline() {
             var ctx = canvas.getContext('2d');
             ctx.strokeStyle = document.getElementById('colorline').value;
-
         }
 
         function cargarimagen() {
@@ -158,9 +160,6 @@
             }
         }
 
-
-
-
         function pintarLinea(event) {
             if (flagPaint) {
                 var coordenadas = obtenerCoordenadas(event);
@@ -171,11 +170,10 @@
                     x: coordenadas.x,
                     y: coordenadas.y
                 };
-                ctx.strokeStyle = "#000"; // color de la linea
+                ctx.strokeStyle = document.getElementById('colorline').value; // color de la linea
                 ctx.stroke(); // dibujamos la linea
             }
         }
-
 
         function pintarFigura(e) {
             if (flagPaint) {
@@ -222,14 +220,14 @@
         }
 
         function dibujarFigura() {
-            ctx.fillStyle = "rgba(22,87,122,0.7)";
+            ctx.fillStyle = document.getElementById('colorline').value;
             if (action == 'circulo') {
                 ctx.arc(mbegin.x, mbegin.y, mend.w, 0, 2 * Math.PI, true);
                 ctx.closePath();
                 ctx.fill();
             } else {
                 ctx.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
-                ctx.closePath();
+                //ctx.closePath();
             }
 
         }
@@ -240,10 +238,10 @@
     <table border="1">
         <tr>
             <td onclick="prepareCanvas('rectangulo')">
-                <img src="images/cuadrado.jpg" width="50px" height="50px">
+                <img src="images/cuadrado.jpg" width="50px" height="50px" alt="Rectangulo">
             </td>
-            <td onclick="prepareCanvas('linia')">
-                <img src="images/lapiz.png" width="50px" height="50px">
+            <td onclick="prepareCanvas('linea')">
+                <img src="images/lapiz.png" width="50px" height="50px" alt="Lapiz">
             </td>
             <td rowspan="7">
                 <canvas id="canvas" width="500px" height="300px"></canvas>
@@ -251,18 +249,18 @@
         </tr>
         <tr>
             <td onclick="prepareCanvas('circulo')">
-                <img src="images/cercle.png" width="50px" height="50px">
+                <img src="images/cercle.png" width="50px" height="50px" alt="Circulo">
             </td>
-            <td onclick="circulos(1)">
-                <img src="images/circulo1.jpg" width="50px" height="50px">
+            <td onclick="neteja()">
+                <img src="images/neteja.jpg" width="50px" height="50px">
             </td>
         </tr>
         <tr>
             <td onclick="muestra('texto')">
-                <img src="images/txt.jpg" width="50px" height="50px">
+                <img src="images/txt.jpg" width="50px" height="50px" alt="Escribir texto">
             </td>
-            <td onclick="neteja()">
-                <img src="images/neteja.jpg" width="50px" height="50px">
+            <td>
+                <input type="color" id="colorline" onchange="colorline()">
             </td>
         </tr>
         <tr>
@@ -270,12 +268,12 @@
                 <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" width="50px" height="50px"></a>
             </td>
             <td onclick="muestra('opciones')">
-                <img src="images/foto.jpg" width="50px" height="50px">
+                <img src="images/foto.jpg" width="50px" height="50px" alt="Gestión con imagenes">
             </td>
         </tr>
         <tr>
             <td>
-                <input type="color" id="colorline" onchange="colorline()">
+                <input type="color" id="colorline" onchange="colorline()" alt="Grosor de la linea">
             </td>
         </tr>
     </table>
@@ -283,7 +281,7 @@
         <tr>
             <td>
                 Tamaño:
-                <select name="Gruix" id="gruix" onchange="gruix()">
+                <select name="Gruix" id="gruix" onchange="gruix()" alt="Grosor de la linea">
                     <option value="1">Gruix 1</option>
                     <option value="2">Gruix 2</option>
                     <option value="3">Gruix 3</option>
