@@ -142,7 +142,7 @@
                 }
             } else if (action == 'NEG') {
 
-                //Negativo
+                //Negativopinta
                 for (var i = 0; i < pixels.length; i += 4) {
                     pixels[i] = 255 - pixels[i];
                     // red
@@ -161,7 +161,7 @@
         }
 
         function escribeTexto() {
-            BNif(document.getElementById('tamanyo').value != "" || document.getElementById('texto').value != "") {
+            if (document.getElementById('tamanyo').value != "" || document.getElementById('texto').value != "") {
                 var ctx = canvas.getContext('2d');
                 // Definimos una fuente y un tamaño de letra.
                 ctx.font = document.getElementById('tamanyo').value + 'px ' + document.getElementById('fuente').value;
@@ -177,6 +177,7 @@
 
         function pintarLinea(event) {
             if (flagPaint) {
+                document.getElementById('gruix').disabled = false;
                 var coordenadas = obtenerCoordenadas(event);
                 ctx.beginPath(); // comenzamos a dibujar
                 ctx.moveTo(mbegin.x, mbegin.y); // ubicamos el cursor en la posicion (10,10)
@@ -249,7 +250,7 @@
 
         function muestra(op) {
             if (op == 'opciones') {
-                document.getElementById('BNimg').hidden = "";
+                document.getElementById('img').hidden = "";
             } else if (op == 'carga') {
                 document.getElementById('carga').hidden = "";
             } else if (op == 'texto') {
@@ -329,15 +330,8 @@
     <table border="1">
         <tr>
             <td>
-                Tamaño:
-                <select name="Gruix" id="gruix" onchange="gruix()" alt="Grosor de la linea">
-                    <option value="1">Gruix 1</option>
-                    <option value="2">Gruix 2</option>
-                    <option value="3">Gruix 3</option>
-                    <option value="4">Gruix 4</option>
-                    <option value="5">Gruix 5</option>
-                    <option value="6">Gruix 6</option>
-                </select>
+                Grosor:
+                <input disabled type="range" id="gruix" onchange="gruix()" value="0" min="0" max="15">
             </td>
         </tr>
     </table>
