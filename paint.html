@@ -2,9 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="es" dir="ltr">
 
 <head>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
     <meta charset="utf-8" />
     <script type="text/javascript">
         var canvas; // el canvas
+        var canvas2; // el canvas
+        var ctx2; // el contexto
         var ctx; // el contexto
         var canvasLimites; // los margenes del canvas
         var flagPaint = false; // nos dice si pintar o no
@@ -21,11 +24,9 @@
             canvasLimites = canvas.getBoundingClientRect(); // obtenemos los limites del canvas
             canvas.addEventListener('mousedown', down, false);
             canvas.addEventListener('mouseup', up, false);
-            //cuando movemos el raton llamamos al actionevent
+            //cuando movemos el raton llamamos al actionEvnt
             canvas.addEventListener('mousemove', actionEvnt, false);
             canvas.style.cursor = "hand";
-            borrador = document.getElementById("borrador");
-            borrador.addEventListener('click', erase, false);
         }
 
         // Este metodo es para cambiar el estado del semafro a la hora de hacer click en el raton
@@ -53,16 +54,32 @@
             }
         }
 
+        function convierteCanvas(act) {
+            action = act;
+            dibuixar();
+        }
+
         //metodo que descarga la imagen del paint
         function downloadCanvas(link, canvasId, filename) {
             link.href = document.getElementById(canvasId).toDataURL();
             link.download = filename;
         }
 
+        function netejacanvas2() {
+            canvas2 = document.getElementById("canvas");
+            ctx2 = canvas2.getContext('2d');
+            ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+            document.getElementById('can2').hidden = "hidden";
+        }
+
         //borrado de la pantalla del canvas
         function neteja() {
+            netejacanvas2();
+            var canvas = document.getElementById('canvas');
             var ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (canvas.getContext) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
         }
 
         function gruix() {
@@ -76,35 +93,45 @@
         }
 
         function cargarimagen() {
-            imatge.src = document.getElementById("imagen").files[0].name; //document.getElementById('imagen').value;
+            imatge.src = document.getElementById("imagen").files[0].name;
             imatge.onload = function () {
-                dibuixar();
+                ponImagen();
             };
-            if (document.getElementById('opimg').value > '1') {
-                document.createElement("canvas2").getContext("2d");
-            }
+            muestra('');
         }
 
-        function dibuixar() {
+        function ponImagen() {
             var canvas = document.getElementById('canvas');
             if (canvas.getContext) {
                 var ctx = canvas.getContext('2d');
                 ctx.drawImage(imatge, 0, 0);
-                if (document.getElementById('opimg').value > '1') {
-                    ferNegatiu(imatge, ctx, canvas);
+            }
+        }
+
+        function dibuixar() {
+            var canvas = document.getElementById('canvas2');
+            if (canvas.getContext) {
+                var ctx = canvas.getContext('2d');
+                if (action == 'BN' || action == 'NEG') {
+                    ctx.drawImage(document.getElementById('canvas'), 0, 0);
+                } else {
+                    ctx.drawImage(imatge, 0, 0);
+                }
+                if (action == 'BN' || action == 'NEG') {
+                    conversion(document.getElementById('canvas'), ctx, canvas);
                 }
             }
         }
 
-        function ferNegatiu(imageObj, context, canvas) {
+        function conversion(imageObj, context, canvas) {
             var destX = 0;
-            var destY = 100;
+            var destY = 0;
             context.drawImage(imageObj, destX, destY);
-            var imageData = context.getImageData(0, 100, canvas.width,
+            var imageData = context.getImageData(0, 0, canvas.width,
                 canvas.height);
             var pixels = imageData.data;
 
-            if (document.getElementById('opimg').value == '3') {
+            if (action == 'BN') {
                 //Blanco y negro
                 for (var i = 0; i < pixels.length * 4; i += 4) {
                     //calcula la luminosidad percibida para este pixel
@@ -113,7 +140,7 @@
                     pixels[i + 1] = luminosidad; // verde
                     pixels[i + 2] = luminosidad; // azul
                 }
-            } else {
+            } else if (action == 'NEG') {
 
                 //Negativo
                 for (var i = 0; i < pixels.length; i += 4) {
@@ -123,30 +150,18 @@
                     pixels[i + 2] = 255 - pixels[i + 2]; // blue
                     // i+3 es alpha
                 }
+            } else {
+
             }
+            action == '';
+            document.getElementById('can2').hidden = "";
             // modifiquem original
-            context.putImageData(imageData, 0, 100);
+            context.putImageData(imageData, 0, 0);
             muestra('oculta');
         }
 
-        function muestra(op) {
-            if (op == 'opciones') {
-                document.getElementById('opciones').hidden = "";
-                document.getElementById('img').hidden = "";
-            } else if (op == 'carga') {
-                document.getElementById('carga').hidden = "";
-            } else if (op == 'texto') {
-                document.getElementById('escribir').hidden = "";
-            } else {
-                document.getElementById('opciones').hidden = "hidden";
-                document.getElementById('img').hidden = "hidden";
-                document.getElementById('carga').hidden = "hidden";
-                document.getElementById('file').value = "";
-            }
-        }
-
         function escribeTexto() {
-            if (document.getElementById('tamanyo').value != "" || document.getElementById('texto').value != "") {
+            BNif(document.getElementById('tamanyo').value != "" || document.getElementById('texto').value != "") {
                 var ctx = canvas.getContext('2d');
                 // Definimos una fuente y un tamaño de letra.
                 ctx.font = document.getElementById('tamanyo').value + 'px ' + document.getElementById('fuente').value;
@@ -190,7 +205,7 @@
                 posX = event.pageX - canvasLimites.left;
                 posY = event.pageY - canvasLimites.top;
             } else {
-                posX = event.clientX - canvasLimites.left;
+                posX = event.clientX - canvasLimferNegatiuites.left;
                 posY = event.clientY - canvasLimites.top;
             }
 
@@ -231,52 +246,86 @@
             }
 
         }
+
+        function muestra(op) {
+            if (op == 'opciones') {
+                document.getElementById('BNimg').hidden = "";
+            } else if (op == 'carga') {
+                document.getElementById('carga').hidden = "";
+            } else if (op == 'texto') {
+                document.getElementById('escribir').hidden = "";
+            } else {
+                document.getElementById('img').hidden = "hidden";
+                document.getElementById('carga').hidden = "hidden";
+                if (document.getElementById('imagen').value != '') {
+                    document.getElementById('imagen').value = "";
+                }
+
+            }
+        }
     </script>
 </head>
 
 <body>
-    <table border="1">
-        <tr>
-            <td onclick="prepareCanvas('rectangulo')">
-                <img src="images/cuadrado.jpg" width="50px" height="50px" alt="Rectangulo">
-            </td>
-            <td onclick="prepareCanvas('linea')">
-                <img src="images/lapiz.png" width="50px" height="50px" alt="Lapiz">
-            </td>
-            <td rowspan="7">
-                <canvas id="canvas" width="500px" height="300px"></canvas>
-            </td>
-        </tr>
-        <tr>
-            <td onclick="prepareCanvas('circulo')">
-                <img src="images/cercle.png" width="50px" height="50px" alt="Circulo">
-            </td>
-            <td onclick="neteja()">
-                <img src="images/neteja.jpg" width="50px" height="50px">
-            </td>
-        </tr>
-        <tr>
-            <td onclick="muestra('texto')">
-                <img src="images/txt.jpg" width="50px" height="50px" alt="Escribir texto">
-            </td>
-            <td>
-                <input type="color" id="colorline" onchange="colorline()">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" width="50px" height="50px"></a>
-            </td>
-            <td onclick="muestra('opciones')">
-                <img src="images/foto.jpg" width="50px" height="50px" alt="Gestión con imagenes">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <input type="color" id="colorline" onchange="colorline()" alt="Grosor de la linea">
-            </td>
-        </tr>
-    </table>
+    <div>
+        <table border="1">
+            <tr>
+                <td onclick="prepareCanvas('rectangulo')">
+                    <img src="images/cuadrado.jpg" class="icon" alt="Rectangulo">
+                </td>
+                <td onclick="prepareCanvas('linea')">
+                    <img src="images/lapiz.png" class="icon" alt="Lapiz">
+                </td>
+                <td rowspan="7">
+                    <canvas id="canvas" width="500px" height="300px"></canvas>
+                </td>
+            </tr>
+            <tr>
+                <td onclick="prepareCanvas('circulo')">
+                    <img src="images/cercle.png" class="icon" alt="Circulo">
+                </td>
+                <td onclick="neteja()">
+                    <img src="images/neteja.jpg" class="icon">
+                </td>
+            </tr>
+            <tr>
+                <td onclick="muestra('texto')">
+                    <img src="images/txt.jpg" class="icon" alt="Escribir texto">
+                </td>
+                <td>
+                    <input type="color" id="colorline" onchange="colorline()">
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" class="icon"></a>
+                </td>
+                <td onclick="muestra('opciones')">
+                    <img src="images/foto.jpg" class="icon" alt="Gestión con imagenes">
+                </td>
+            </tr>
+            <tr>
+                <td onclick="convierteCanvas('NEG')">
+                    <img src="images/negativo.png" class="icon">
+                </td>
+                <td onclick="convierteCanvas('BN')">
+                    <img src="images/BN.png" class="icon">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="can2" hidden="hidden">
+        <table border="1">
+            <tr>
+                <td>
+                    <a id="download" onclick="downloadCanvas(this, 'canvas2', 'test.png')"><img src="images/descarga.png" class="icon"></a>
+                </td>
+                <td rowspan="7">
+                    <canvas id="canvas2" width="500px" height="300px"></canvas>
+                </td>
+            </tr>
+        </table>
+    </div>
     <table border="1">
         <tr>
             <td>
@@ -292,26 +341,12 @@
             </td>
         </tr>
     </table>
-    <div id="opciones" hidden="hidden">
-        <table>
-            <tr>
-                <td>
-                    Selecciona una opción
-                    <select name="opimg" id="opimg">
-                        <option value="1">Cargar Imagen</option>
-                        <option value="2">Negativo</option>
-                        <option value="3">Blanco-Negro</option>
-                    </select>
-                </td>
-            </tr>
-        </table>
-    </div>
     <div id="img" hidden="hidden">
         <table>
             <tr>
                 <td>
                     Ingresa el archivo:
-                    <input id="imagen" type="file" mutliple="true" onchange="muestra('carga')" />
+                    <input id="imagen" type="file" mutliple="false" onchange="muestra('carga')" />
                     <input type="button" id="carga" onclick="cargarimagen()" hidden="hidden" value="Carga Imagen" />
                 </td>
             </tr>
@@ -335,6 +370,7 @@
             </tr>
         </table>
     </div>
+
 </body>
 
 </html>
