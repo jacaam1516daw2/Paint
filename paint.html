@@ -66,7 +66,7 @@
         }
 
         function netejacanvas2() {
-            canvas2 = document.getElementById("canvas");
+            canvas2 = document.getElementById("canvas2");
             ctx2 = canvas2.getContext('2d');
             ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
             document.getElementById('can2').hidden = "hidden";
@@ -75,20 +75,22 @@
         //borrado de la pantalla del canvas
         function neteja() {
             netejacanvas2();
-            var canvas = document.getElementById('canvas');
-            var ctx = canvas.getContext('2d');
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
             if (canvas.getContext) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
         }
 
         function gruix() {
-            var ctx = canvas.getContext('2d');
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
             ctx.lineWidth = document.getElementById('gruix').value;
         }
 
         function colorline() {
-            var ctx = canvas.getContext('2d');
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
             ctx.strokeStyle = document.getElementById('colorline').value;
         }
 
@@ -101,17 +103,18 @@
         }
 
         function ponImagen() {
-            var canvas = document.getElementById('canvas');
+            canvas = document.getElementById('canvas');
             if (canvas.getContext) {
-                var ctx = canvas.getContext('2d');
+                ctx = canvas.getContext('2d');
                 ctx.drawImage(imatge, 0, 0);
             }
         }
 
         function dibuixar() {
-            var canvas = document.getElementById('canvas2');
-            if (canvas.getContext) {
-                var ctx = canvas.getContext('2d');
+            netejacanvas2();
+            canvas2 = document.getElementById('canvas2');
+            if (canvas2.getContext) {
+                ctx = canvas2.getContext('2d');
                 if (action == 'BN' || action == 'NEG') {
                     ctx.drawImage(document.getElementById('canvas'), 0, 0);
                 } else {
@@ -130,6 +133,7 @@
             var imageData = context.getImageData(0, 0, canvas.width,
                 canvas.height);
             var pixels = imageData.data;
+            netejacanvas2
 
             if (action == 'BN') {
                 //Blanco y negro
@@ -141,8 +145,7 @@
                     pixels[i + 2] = luminosidad; // azul
                 }
             } else if (action == 'NEG') {
-
-                //Negativopinta
+                //Negativo
                 for (var i = 0; i < pixels.length; i += 4) {
                     pixels[i] = 255 - pixels[i];
                     // red
@@ -162,7 +165,9 @@
 
         function escribeTexto() {
             if (document.getElementById('tamanyo').value != "" || document.getElementById('texto').value != "") {
-                var ctx = canvas.getContext('2d');
+                canvas = document.getElementById('canvas');
+                ctx = canvas.getContext('2d');
+                ctx.fillStyle = document.getElementById('colorline').value;
                 // Definimos una fuente y un tamaño de letra.
                 ctx.font = document.getElementById('tamanyo').value + 'px ' + document.getElementById('fuente').value;
                 // Y solo queda utilizar fillText para definir el texto a mostrar y la posición de origen.
@@ -236,14 +241,16 @@
         }
 
         function dibujarFigura() {
-            ctx.fillStyle = document.getElementById('colorline').value;
+
             if (action == 'circulo') {
                 ctx.arc(mbegin.x, mbegin.y, mend.w, 0, 2 * Math.PI, true);
                 ctx.closePath();
                 ctx.fill();
+                ctx.fillStyle = document.getElementById('colorline').value;
+
             } else {
+                ctx.fillStyle = document.getElementById('colorline').value;
                 ctx.fillRect(mbegin.x, mbegin.y, mend.w, mend.h);
-                //ctx.closePath();
             }
 
         }
@@ -255,6 +262,8 @@
                 document.getElementById('carga').hidden = "";
             } else if (op == 'texto') {
                 document.getElementById('escribir').hidden = "";
+            } else if (op == 'close') {
+                document.getElementById('can2').hidden = "hidden";
             } else {
                 document.getElementById('img').hidden = "hidden";
                 document.getElementById('carga').hidden = "hidden";
@@ -268,66 +277,52 @@
 </head>
 
 <body>
-    <div>
-        <table border="1">
-            <tr>
-                <td onclick="prepareCanvas('rectangulo')">
-                    <img src="images/cuadrado.jpg" class="icon" alt="Rectangulo">
-                </td>
-                <td onclick="prepareCanvas('linea')">
-                    <img src="images/lapiz.png" class="icon" alt="Lapiz">
-                </td>
-                <td rowspan="7">
-                    <canvas id="canvas" width="500px" height="300px"></canvas>
-                </td>
-            </tr>
-            <tr>
-                <td onclick="prepareCanvas('circulo')">
-                    <img src="images/cercle.png" class="icon" alt="Circulo">
-                </td>
-                <td onclick="neteja()">
-                    <img src="images/neteja.jpg" class="icon">
-                </td>
-            </tr>
-            <tr>
-                <td onclick="muestra('texto')">
-                    <img src="images/txt.jpg" class="icon" alt="Escribir texto">
-                </td>
-                <td>
-                    <input type="color" id="colorline" onchange="colorline()">
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" class="icon"></a>
-                </td>
-                <td onclick="muestra('opciones')">
-                    <img src="images/foto.jpg" class="icon" alt="Gestión con imagenes">
-                </td>
-            </tr>
-            <tr>
-                <td onclick="convierteCanvas('NEG')">
-                    <img src="images/negativo.png" class="icon">
-                </td>
-                <td onclick="convierteCanvas('BN')">
-                    <img src="images/BN.png" class="icon">
-                </td>
-            </tr>
-        </table>
-    </div>
-    <div id="can2" hidden="hidden">
-        <table border="1">
-            <tr>
-                <td>
-                    <a id="download" onclick="downloadCanvas(this, 'canvas2', 'test.png')"><img src="images/descarga.png" class="icon"></a>
-                </td>
-                <td rowspan="7">
-                    <canvas id="canvas2" width="500px" height="300px"></canvas>
-                </td>
-            </tr>
-        </table>
-    </div>
-    <table border="1">
+    <table class="tab" border="1">
+        <tr>
+            <td onclick="prepareCanvas('rectangulo')">
+                <img src="images/cuadrado.jpg" class="icon" alt="Rectangulo">
+            </td>
+            <td onclick="prepareCanvas('linea')">
+                <img src="images/lapiz.png" class="icon" alt="Lapiz">
+            </td>
+            <td rowspan="7">
+                <canvas id="canvas" width="500px" height="300px"></canvas>
+            </td>
+        </tr>
+        <tr>
+            <td onclick="prepareCanvas('circulo')">
+                <img src="images/cercle.png" class="icon" alt="Circulo">
+            </td>
+            <td onclick="neteja()">
+                <img src="images/neteja.jpg" class="icon">
+            </td>
+        </tr>
+        <tr>
+            <td onclick="muestra('texto')">
+                <img src="images/txt.jpg" class="icon" alt="Escribir texto">
+            </td>
+            <td>
+                <input type="color" id="colorline" onchange="colorline()">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a id="download" onclick="downloadCanvas(this, 'canvas', 'test.png')"><img src="images/descarga.png" class="icon"></a>
+            </td>
+            <td onclick="muestra('opciones')">
+                <img src="images/foto.jpg" class="icon" alt="Gestión con imagenes">
+            </td>
+        </tr>
+        <tr>
+            <td onclick="convierteCanvas('NEG')">
+                <img src="images/negativo.png" class="icon">
+            </td>
+            <td onclick="convierteCanvas('BN')">
+                <img src="images/BN.png" class="icon">
+            </td>
+        </tr>
+    </table>
+    <table class="tab" border="1">
         <tr>
             <td>
                 Grosor:
@@ -336,7 +331,7 @@
         </tr>
     </table>
     <div id="img" hidden="hidden">
-        <table>
+        <table class="tab">
             <tr>
                 <td>
                     Ingresa el archivo:
@@ -347,7 +342,7 @@
         </table>
     </div>
     <div id="escribir" hidden="hidden">
-        <table>
+        <table class="tab">
             <tr>
                 <td>
                     Tamaño fuente:
@@ -364,7 +359,21 @@
             </tr>
         </table>
     </div>
-
+    <table class="tab" border="1" id="can2" hidden="hidden">
+        <tr>
+            <td>
+                <a id="download" onclick="downloadCanvas(this, 'canvas2', 'test.png')"><img src="images/descarga.png" class="icon"></a>
+            </td>
+            <td rowspan="2">
+                <canvas id="canvas2" width="500px" height="313px"></canvas>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <img src="images/close.png" class="icon" onclick="muestra('close')">
+            </td>
+        </tr>
+    </table>
 </body>
 
 </html>
