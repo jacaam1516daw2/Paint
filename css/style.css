@@ -1,5 +1,4 @@
-html,
-body {
+#bodypaint {
     background-image: url(/images/fondo2.png);
     width: 100%;
     height: 100%;
@@ -17,4 +16,20 @@ body {
 
 .tab {
     background-color: lightgray;
+}
+
+#video {
+    position: absolute;
+    margin: 15% 25%;
+}
+
+#indexBody {
+    background-image: url(/images/fondo.png);
+}
+
+#title {
+    font-size: 50px;
+    text-align: center;
+    margin-top: -9%;
+    background-color: gray;
 }
